@@ -1,10 +1,8 @@
 module github.com/charlienet/utils
 
-go 1.17
-
-require github.com/tjfoc/gmsm v1.4.1
+go 1.16
 
 require (
-	golang.org/x/crypto v0.0.0-20201012173705-84dcc777aaee // indirect
-	golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f // indirect
+	github.com/cespare/xxhash/v2 v2.1.2
+	github.com/tjfoc/gmsm v1.4.1
 )
