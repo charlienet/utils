@@ -21,3 +21,8 @@ func TestXXHash(t *testing.T) {
 		t.Log(hex.EncodeToString(hash.XXhash([]byte(strconv.Itoa(i)))), "  ", hash.XXHashUint64([]byte(strconv.Itoa(i))))
 	}
 }
+
+func TestMurmur3(t *testing.T) {
+	t.Log(hash.Murmur3([]byte("123")))
+	t.Log(hash.XXHashUint64([]byte("123")))
+}
