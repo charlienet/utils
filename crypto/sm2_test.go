@@ -1,7 +1,10 @@
 package crypto_test
 
 import (
+	"crypto/x509"
 	"encoding/hex"
+	"encoding/pem"
+	"fmt"
 	"testing"
 
 	"github.com/charlienet/utils/crypto"
@@ -75,4 +78,22 @@ func TestBadPublicPem(t *testing.T) {
 	t.Log(hex.EncodeToString(sign), err)
 
 	t.Log(signer.Verify(msg, sign))
+}
+
+const pemString = `-----BEGIN EC PARAMETERS-----
+BggqgRzPVQGCLQ==
+-----END EC PARAMETERS-----
+-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIAU/RPiFOw8sI+4dM/0ZusJ7dWxi72DpnOukgGNZfPP5oAoGCCqBHM9V
+AYItoUQDQgAEbl5hPO00SJnkTpNjefes6QjmOrhQTrcocBQ0V9yB3ow/COroyHIp
+MV8UROLaT5kNUim8Z6XQjL+TWrfo11JQ2w==
+-----END EC PRIVATE KEY-----`
+
+func TestDecodePem(t *testing.T) {
+
+	block, _ := pem.Decode([]byte(pemString))
+	fmt.Println(string(block.Bytes))
+
+	prv, err := x509.ParseECPrivateKey(block.Bytes)
+	t.Log(prv, err)
 }

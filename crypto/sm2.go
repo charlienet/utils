@@ -54,7 +54,7 @@ func ParseSm2PrivateKey(p []byte, pwd []byte) option {
 	return func(so *sm2Instance) error {
 		fmt.Println(string(p))
 
-		priv, err := x.ReadPrivateKeyFromPem(p, []byte{})
+		priv, err := x.ReadPrivateKeyFromPem(p, pwd)
 		if err != nil {
 			return err
 		}

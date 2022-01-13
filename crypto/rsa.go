@@ -10,23 +10,25 @@ import (
 	"strconv"
 )
 
-const (
-	defaultBits = 1024
-	defaultHash = crypto.SHA1 // 默认哈希算法
-)
+
 
 type rsaInstance struct {
-	h   crypto.Hash
+	hashOptions
 	prk *rsa.PrivateKey
 	puk *rsa.PublicKey
 }
 
 type rsaOption func(o *rsaInstance) error
 
-func NewRsa(opts ...rsaOption) (*rsaInstance, error) {
-	o := &rsaInstance{
-		h: defaultHash,
+func NewRsa(h Hash, opts ...rsaOption) (*rsaInstance, error) {
+	o := &rsaInstance{}
+
+	sh := crypto.Hash(h)
+	if !sh.Available() {
+		return nil, errors.New("unknown hash value " + strconv.Itoa(int(h)))
 	}
+
+	o.h = sh
 
 	for _, f := range opts {
 		if err := f(o); err != nil {
@@ -36,7 +38,7 @@ func NewRsa(opts ...rsaOption) (*rsaInstance, error) {
 
 	// 未设置私钥时随机生成密钥
 	if o.prk == nil {
-		prk, err := rsa.GenerateKey(rand.Reader, defaultBits)
+		prk, err := rsa.GenerateKey(rand.Reader, defaultRsaBits)
 		if err != nil {
 			return nil, err
 		}
@@ -90,18 +92,6 @@ func ParsePKIXPublicKey(p []byte) rsaOption {
 	}
 }
 
-func WithHash(h Hash) rsaOption {
-	return func(o *rsaInstance) error {
-		sh := crypto.Hash(h)
-		if !sh.Available() {
-			return errors.New("unknown hash value " + strconv.Itoa(int(h)))
-		}
-
-		o.h = sh
-		return nil
-	}
-}
-
 func (o *rsaInstance) Encrypt(msg []byte) ([]byte, error) {
 	return rsa.EncryptPKCS1v15(rand.Reader, o.puk, msg)
 }
@@ -123,10 +113,4 @@ func (o *rsaInstance) Verify(msg, sign []byte) bool {
 	}
 
 	return true
-}
-
-func (o *rsaInstance) getHash(msg []byte) []byte {
-	h := o.h.New()
-	h.Write(msg)
-	return h.Sum(nil)
 }

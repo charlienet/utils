@@ -1,5 +1,7 @@
 package crypto
 
+import "crypto"
+
 type Hash uint
 
 const (
@@ -24,3 +26,17 @@ const (
 	BLAKE2b_512                 // import golang.org/x/crypto/blake2b
 	SM3                         // import
 )
+
+const (
+	defaultRsaBits = 1024
+)
+
+type hashOptions struct {
+	h crypto.Hash
+}
+
+func (o *hashOptions) getHash(msg []byte) []byte {
+	h := o.h.New()
+	h.Write(msg)
+	return h.Sum(nil)
+}

@@ -1,10 +1,9 @@
 package crypto_test
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/hex"
-
-	sc "crypto"
 
 	"testing"
 
@@ -12,16 +11,7 @@ import (
 )
 
 func TestRsaSign(t *testing.T) {
-	crypto.WithHash(crypto.SHA1)
-
-	h := crypto.SHA1
-	t.Log(h)
-
-	t.Log(sc.Hash(h))
-}
-
-func TestSign(t *testing.T) {
-	rsa, err := crypto.NewRsa(crypto.WithHash(crypto.SHA256))
+	rsa, err := crypto.NewRsa(crypto.SHA256)
 	t.Log(rsa, err)
 
 	msg := []byte("123456")
@@ -33,7 +23,7 @@ func TestSign(t *testing.T) {
 }
 
 func TestEncrypt(t *testing.T) {
-	rsa, err := crypto.NewRsa()
+	rsa, err := crypto.NewRsa(crypto.SHA1)
 	t.Log(rsa, err)
 
 	msg := []byte("123456")
@@ -107,6 +97,7 @@ xOQ3KQNxnTteS00kzQIDAQAB
 
 func TestParseKey(t *testing.T) {
 	rsa, err := crypto.NewRsa(
+		crypto.SHA1,
 		crypto.ParsePKCS1PrivateKey([]byte(pkBytes)))
 
 	t.Log(rsa, err)
@@ -120,7 +111,10 @@ func TestParseKey(t *testing.T) {
 }
 
 func TestBadPubKey(t *testing.T) {
+
+	context.TODO()
 	rsa, err := crypto.NewRsa(
+		crypto.SHA1,
 		crypto.ParsePKCS1PrivateKey([]byte(pkBytes)),
 		crypto.ParsePKIXPublicKey([]byte(badPubBytes)))
 
