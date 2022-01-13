@@ -57,12 +57,9 @@ func RandInt(min, max int) int {
 
 // 生成指定范围的随机数
 func RandInt32(min, max int32) int32 {
-	for {
-		n, _ := randNumber(int32(max))
-		if n >= min {
-			return n
-		}
-	}
+	sub := max - min
+	n, _ := randNumber(int32(sub))
+	return n + sub
 }
 
 func RandByts(len int) ([]byte, error) {
