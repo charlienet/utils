@@ -1,8 +1,6 @@
 package crypto
 
 import (
-	"encoding/hex"
-	"fmt"
 	"sync"
 
 	"github.com/tjfoc/gmsm/sm4"
@@ -72,8 +70,6 @@ func (o *sm4CbcInstance) Decrypt(cipherText []byte) ([]byte, error) {
 		return nil, err
 	}
 	defer resetIV()
-	
-	fmt.Println(hex.EncodeToString(sm4.IV))
 
 	return sm4.Sm4Cbc(o.key, cipherText, false)
 }
