@@ -1,6 +1,10 @@
 package crypto
 
 import (
+	"encoding/hex"
+	"fmt"
+	"sync"
+
 	"github.com/tjfoc/gmsm/sm4"
 )
 
@@ -32,7 +36,8 @@ func (o *sm4EcbInstance) Decrypt(cipherText []byte) ([]byte, error) {
 
 type sm4CbcInstance struct {
 	*sm4Instance
-	iv []byte
+	iv   []byte
+	lock sync.Mutex
 }
 
 func (o *sm4Instance) CBC() *sm4CbcInstance {
@@ -48,10 +53,11 @@ func (o *sm4CbcInstance) WithIV(iv []byte) *sm4CbcInstance {
 }
 
 func (o *sm4CbcInstance) Encrypt(msg []byte) ([]byte, error) {
-	if len(o.iv) == sm4.BlockSize {
-		if err := sm4.SetIV(o.iv); err != nil {
-			return nil, err
-		}
+	o.lock.Lock()
+	defer o.lock.Unlock()
+
+	if err := sm4.SetIV(o.iv); err != nil {
+		return nil, err
 	}
 	defer resetIV()
 
@@ -59,12 +65,15 @@ func (o *sm4CbcInstance) Encrypt(msg []byte) ([]byte, error) {
 }
 
 func (o *sm4CbcInstance) Decrypt(cipherText []byte) ([]byte, error) {
-	if len(o.iv) == sm4.BlockSize {
-		if err := sm4.SetIV(o.iv); err != nil {
-			return nil, err
-		}
+	o.lock.Lock()
+	defer o.lock.Unlock()
+
+	if err := sm4.SetIV(o.iv); err != nil {
+		return nil, err
 	}
 	defer resetIV()
+	
+	fmt.Println(hex.EncodeToString(sm4.IV))
 
 	return sm4.Sm4Cbc(o.key, cipherText, false)
 }
