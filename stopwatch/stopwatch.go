@@ -54,7 +54,7 @@ func (w *watch) IsRunning() bool {
 }
 
 func (w *watch) Elapsed() time.Duration {
-	return time.Nanosecond * time.Duration(w.ElapsedNanoseconds())
+	return time.Duration(w.ElapsedNanoseconds())
 }
 
 func (w *watch) ElapsedMilliseconds() int64 {
