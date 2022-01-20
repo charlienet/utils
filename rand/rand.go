@@ -4,6 +4,9 @@ import (
 	"crypto/rand"
 	"io"
 	"math/big"
+	"time"
+
+	mrnd "math/rand"
 
 	"github.com/charlienet/utils/bytesconv"
 )
@@ -19,26 +22,58 @@ const (
 )
 
 type charScope struct {
-	bytes []byte
+	bytes  []byte
+	length int
+	max    int
+	bits   int
+	mask   int
+}
+
+func StringScope(str string) *charScope {
+	len := len(str)
+
+	scope := &charScope{
+		bytes:  bytesconv.StringToBytes(str),
+		length: len,
+		bits:   1,
+	}
+
+	for scope.mask < len {
+		scope.mask = 1<<scope.bits - 1
+		scope.bits++
+	}
+
+	return scope
 }
 
 var (
-	Uppercase = &charScope{bytes: bytesconv.StringToBytes(uppercase)} // 大写字母
-	Lowercase = &charScope{bytes: bytesconv.StringToBytes(lowercase)} // 小写字母
-	Digit     = &charScope{bytes: bytesconv.StringToBytes(digit)}     // 数字
-	Nomix     = &charScope{bytes: bytesconv.StringToBytes(nomix)}     // 不混淆字符
-	Letter    = &charScope{bytes: bytesconv.StringToBytes(letter)}    // 字母
-	Hex       = &charScope{bytes: bytesconv.StringToBytes(hex)}       // 十六进制字符
-	AllChars  = &charScope{bytes: bytesconv.StringToBytes(allChars)}  // 所有字符
+	Uppercase = StringScope(uppercase) // 大写字母
+	Lowercase = StringScope(lowercase) // 小写字母
+	Digit     = StringScope(digit)     // 数字
+	Nomix     = StringScope(nomix)     // 不混淆字符
+	Letter    = StringScope(letter)    // 字母
+	Hex       = StringScope(hex)       // 十六进制字符
+	AllChars  = StringScope(allChars)  // 所有字符
 )
 
-// 生成指定长度的随机字符串
-func (scope *charScope) RandString(length int) string {
-	charLength := len(scope.bytes) - 1
+var randSource mrnd.Source = mrnd.NewSource(time.Now().UnixNano())
 
-	ret := make([]byte, 0, length)
-	for i := 0; i < length; i++ {
-		ret = append(ret, scope.bytes[RandInt(0, charLength)])
+// 生成指定长度的随机字符串
+func (scope *charScope) RandString(n int) string {
+
+	ret := make([]byte, n)
+	for i, cache, remain := n-1, randSource.Int63(), scope.max; i >= 0; {
+		if remain == 0 {
+			cache, remain = randSource.Int63(), scope.max
+		}
+
+		if idx := int(cache & int64(scope.mask)); idx < scope.length {
+			ret[i] = scope.bytes[idx]
+			i--
+		}
+
+		cache >>= int64(scope.bits)
+		remain--
 	}
 
 	return bytesconv.BytesToString(ret)
@@ -57,12 +92,16 @@ func RandInt(min, max int) int {
 
 // 生成指定范围的随机数
 func RandInt32(min, max int32) int32 {
-	sub := max - min
+	sub := max
+	if min > 0 {
+		sub = max - min
+	}
+
 	n, _ := randNumber(int32(sub))
 	return n + sub
 }
 
-func RandByts(len int) ([]byte, error) {
+func RandBytes(len int) ([]byte, error) {
 	r := make([]byte, len)
 	_, err := io.ReadFull(rand.Reader, r)
 	return r, err
