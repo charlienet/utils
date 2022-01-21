@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/hex"
 	"testing"
+	"time"
+
+	mrnd "math/rand"
 
 	"github.com/charlienet/utils/rand"
 )
@@ -14,6 +17,20 @@ func TestRandString(t *testing.T) {
 	b, err := rand.RandBytes(32)
 	t.Log(err)
 	t.Log(hex.EncodeToString(b))
+}
+
+func TestRandHex(t *testing.T) {
+	h := rand.Hex.RandString(3)
+	t.Log(h)
+}
+
+func TestRandMax(t *testing.T) {
+	mrnd.Seed(time.Now().UnixNano())
+}
+
+func BenchmarkNoop(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
 }
 
 func BenchmarkRandString(b *testing.B) {
