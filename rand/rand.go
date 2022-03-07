@@ -18,6 +18,7 @@ const (
 	letter    = uppercase + lowercase
 	allChars  = uppercase + lowercase + digit
 	hex       = digit + "ABCDEF"
+	_         = allChars + "/+"
 )
 
 type charScope struct {
@@ -44,9 +45,12 @@ func strScope(str string, f func(int) int) *charScope {
 	}
 
 	for scope.mask < len {
-		scope.mask = 1<<scope.bits - 1
 		scope.bits++
+		scope.mask = 1<<scope.bits - 1
 	}
+
+	scope.max = scope.mask / scope.bits
+
 	return scope
 }
 
