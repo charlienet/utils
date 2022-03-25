@@ -1,7 +1,6 @@
 package generics
 
 import (
-	"fmt"
 	"runtime"
 	"sync"
 	"unsafe"
@@ -92,7 +91,6 @@ func (m *ConcurrnetMap[K, V]) Delete(key K) {
 
 func (m *ConcurrnetMap[K, V]) ForEach(f func(K, V)) {
 	for i := 0; i < m.numOfBuckets; i++ {
-		fmt.Println(i)
 		bucket := m.buckets[i]
 		bucket.foreach(f)
 	}
