@@ -3,6 +3,7 @@ package rand
 import (
 	"crypto/rand"
 	"io"
+	"sync"
 	"time"
 
 	mrnd "math/rand"
@@ -65,6 +66,7 @@ var (
 )
 
 var randSource mrnd.Source = mrnd.NewSource(time.Now().UnixNano())
+var randLock sync.Mutex
 
 // 生成指定长度的随机字符串
 func (scope *charScope) RandString(length int) string {
@@ -74,9 +76,9 @@ func (scope *charScope) RandString(length int) string {
 	}
 
 	ret := make([]byte, n)
-	for i, cache, remain := n-1, randSource.Int63(), scope.max; i >= 0; {
+	for i, cache, remain := n-1, randInt63(), scope.max; i >= 0; {
 		if remain == 0 {
-			cache, remain = randSource.Int63(), scope.max
+			cache, remain = randInt63(), scope.max
 		}
 
 		if idx := int(cache & int64(scope.mask)); idx < scope.length {
@@ -112,6 +114,16 @@ func RandBytes(len int) ([]byte, error) {
 // 	r, err := rand.Int(rand.Reader, big.NewInt(max+1))
 // 	return r.Int64(), err
 // }
+
+func randInt63() int64 {
+	var v int64
+
+	randLock.Lock()
+	v = randSource.Int63()
+	randLock.Unlock()
+
+	return v
+}
 
 func randNumber2(max int) int {
 	rnd := mrnd.New(randSource)

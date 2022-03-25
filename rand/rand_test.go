@@ -2,7 +2,6 @@ package rand_test
 
 import (
 	"bytes"
-	"encoding/hex"
 	"testing"
 	"time"
 
@@ -12,15 +11,15 @@ import (
 )
 
 func TestRandString(t *testing.T) {
-	t.Log(rand.Hex.RandString(2000))
+	t.Log(rand.AllChars.RandString(20))
 
-	b, err := rand.RandBytes(32)
-	t.Log(err)
-	t.Log(hex.EncodeToString(b))
+	// b, err := rand.RandBytes(32)
+	// t.Log(err)
+	// t.Log(hex.EncodeToString(b))
 }
 
 func TestRandHex(t *testing.T) {
-	h := rand.Hex.RandString(3)
+	h := rand.Hex.RandString(8)
 	t.Log(h)
 }
 
@@ -28,8 +27,19 @@ func TestRandMax(t *testing.T) {
 	mrnd.Seed(time.Now().UnixNano())
 }
 
+func BenchmarkParallel(b *testing.B) {
+	rand.Hex.RandString(16)
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			rand.Hex.RandString(16)
+		}
+	})
+}
+
 func BenchmarkNoop(b *testing.B) {
 	for i := 0; i < b.N; i++ {
+		rand.AllChars.RandString(16)
 	}
 }
 
