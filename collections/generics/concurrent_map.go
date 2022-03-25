@@ -90,10 +90,17 @@ func (m *ConcurrnetMap[K, V]) Delete(key K) {
 }
 
 func (m *ConcurrnetMap[K, V]) ForEach(f func(K, V)) {
+	var wg sync.WaitGroup
+
+	wg.Add(m.numOfBuckets)
 	for i := 0; i < m.numOfBuckets; i++ {
-		bucket := m.buckets[i]
-		bucket.foreach(f)
+		go func(i int) {
+			m.buckets[i].foreach(f)
+			wg.Done()
+		}(i)
 	}
+
+	wg.Wait()
 }
 
 func (m *ConcurrnetMap[K, V]) Clone() *ConcurrnetMap[K, V] {

@@ -36,6 +36,8 @@ func TestForEach(t *testing.T) {
 	m.ForEach(func(s1, s2 string) {
 		t.Log(s1, s2)
 	})
+
+	t.Log("finish")
 }
 
 func BenchmarkConcurrnetMap(b *testing.B) {
