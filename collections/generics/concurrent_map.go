@@ -8,7 +8,7 @@ import (
 
 var defaultNumOfBuckets = runtime.GOMAXPROCS(runtime.NumCPU())
 
-type concurrnetMap[K comparable, V any] struct {
+type ConcurrnetMap[K comparable, V any] struct {
 	buckets      []*innerMap[K, V]
 	numOfBuckets int
 }
@@ -56,7 +56,7 @@ func (im *innerMap[K, V]) clone() *innerMap[K, V] {
 	}
 }
 
-func NewConcurrnetMap[K comparable, V any]() *concurrnetMap[K, V] {
+func NewConcurrnetMap[K comparable, V any]() *ConcurrnetMap[K, V] {
 	num := defaultNumOfBuckets
 
 	buckets := make([]*innerMap[K, V], num)
@@ -64,38 +64,38 @@ func NewConcurrnetMap[K comparable, V any]() *concurrnetMap[K, V] {
 		buckets[i] = createInnerMap[K, V]()
 	}
 
-	return &concurrnetMap[K, V]{
+	return &ConcurrnetMap[K, V]{
 		numOfBuckets: num,
 		buckets:      buckets,
 	}
 }
 
-func (m *concurrnetMap[K, V]) Set(key K, value V) {
+func (m *ConcurrnetMap[K, V]) Set(key K, value V) {
 	m.getBucket(key).set(key, value)
 }
 
-func (m *concurrnetMap[K, V]) Get(key K) (V, bool) {
+func (m *ConcurrnetMap[K, V]) Get(key K) (V, bool) {
 	return m.getBucket(key).get(key)
 }
 
-func (m *concurrnetMap[K, V]) Delete(key K) {
+func (m *ConcurrnetMap[K, V]) Delete(key K) {
 	im := m.getBucket(key)
 	im.del(key)
 }
 
-func (m *concurrnetMap[K, V]) Clone() *concurrnetMap[K, V] {
+func (m *ConcurrnetMap[K, V]) Clone() *ConcurrnetMap[K, V] {
 	buckets := make([]*innerMap[K, V], m.numOfBuckets)
 	for i := 0; i < m.numOfBuckets; i++ {
 		buckets[i] = m.buckets[i].clone()
 	}
 
-	return &concurrnetMap[K, V]{
+	return &ConcurrnetMap[K, V]{
 		buckets:      buckets,
 		numOfBuckets: m.numOfBuckets,
 	}
 }
 
-func (m *concurrnetMap[K, V]) getBucket(k K) *innerMap[K, V] {
+func (m *ConcurrnetMap[K, V]) getBucket(k K) *innerMap[K, V] {
 	pointer := unsafe.Pointer(&k)
 	num := *(*uint)(pointer)
 
