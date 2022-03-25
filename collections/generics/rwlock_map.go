@@ -9,7 +9,7 @@ type RWLockMap[K comparable, V any] struct {
 	lock sync.RWMutex
 }
 
-func NewRWLockMap[K comparable, V any]() *RWLockMap[K, V] {
+func NewRWLockMap[K comparable, V any]() Map[K, V] {
 	return &RWLockMap[K, V]{
 		m: make(map[K]V),
 	}
@@ -38,4 +38,23 @@ func (m *RWLockMap[K, V]) ForEach(f func(K, V)) {
 	for k, v := range m.m {
 		f(k, v)
 	}
+}
+
+func (m *RWLockMap[K, V]) Clone() Map[K, V] {
+	new := make(map[K]V, m.Count())
+	for k, v := range m.m {
+		new[k] = v
+	}
+
+	return &RWLockMap[K, V]{
+		m: new,
+	}
+}
+
+func (m *RWLockMap[K, V]) Clear() {
+	m.m = make(map[K]V)
+}
+
+func (m *RWLockMap[K, V]) Count() int {
+	return len(m.m)
 }
