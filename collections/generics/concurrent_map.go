@@ -1,6 +1,7 @@
 package generics
 
 import (
+	"fmt"
 	"runtime"
 	"sync"
 	"unsafe"
@@ -43,6 +44,12 @@ func (im *innerMap[K, V]) del(k K) {
 	im.lock.Unlock()
 }
 
+func (im *innerMap[K, V]) foreach(f func(K, V)) {
+	for k, v := range im.m {
+		f(k, v)
+	}
+}
+
 func (im *innerMap[K, V]) clone() *innerMap[K, V] {
 	im.lock.RLock()
 	new := make(map[K]V, len(im.m))
@@ -81,6 +88,14 @@ func (m *ConcurrnetMap[K, V]) Get(key K) (V, bool) {
 func (m *ConcurrnetMap[K, V]) Delete(key K) {
 	im := m.getBucket(key)
 	im.del(key)
+}
+
+func (m *ConcurrnetMap[K, V]) ForEach(f func(K, V)) {
+	for i := 0; i < m.numOfBuckets; i++ {
+		fmt.Println(i)
+		bucket := m.buckets[i]
+		bucket.foreach(f)
+	}
 }
 
 func (m *ConcurrnetMap[K, V]) Clone() *ConcurrnetMap[K, V] {

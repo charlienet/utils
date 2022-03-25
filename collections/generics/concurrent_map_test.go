@@ -1,6 +1,7 @@
 package generics_test
 
 import (
+	"fmt"
 	"runtime"
 	"testing"
 
@@ -21,6 +22,20 @@ func TestConcurrentMap(t *testing.T) {
 	m.Delete(key)
 	v, ok = m.Get(key)
 	t.Log("v:", v, ok)
+}
+
+func TestForEach(t *testing.T) {
+
+	m := generics.NewConcurrnetMap[string, string]()
+	for k := 0; k < 10; k++ {
+		key := fmt.Sprintf("abc-%d", k)
+		value := fmt.Sprintf("abc-%d", k)
+		m.Set(key, value)
+	}
+
+	m.ForEach(func(s1, s2 string) {
+		t.Log(s1, s2)
+	})
 }
 
 func BenchmarkConcurrnetMap(b *testing.B) {
