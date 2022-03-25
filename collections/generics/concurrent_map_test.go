@@ -48,6 +48,8 @@ func TestExist(t *testing.T) {
 	m.Set(key, value)
 
 	keyv2 := "abc"
+
+	t.Logf("%p %p", &key, &keyv2)
 	_, ok := m.Get(keyv2)
 	t.Log("ok", ok)
 }

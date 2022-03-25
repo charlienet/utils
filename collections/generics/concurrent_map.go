@@ -8,6 +8,8 @@ import (
 	"github.com/charlienet/utils/hash"
 )
 
+var _ Map[string, string] = &ConcurrnetMap[string, string]{}
+
 var defaultNumOfBuckets = runtime.GOMAXPROCS(runtime.NumCPU())
 
 type ConcurrnetMap[K comparable, V any] struct {

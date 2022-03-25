@@ -2,6 +2,8 @@ package generics
 
 import "sync"
 
+var _ Map[string, string] = &RWLockMap[string, string]{}
+
 type RWLockMap[K comparable, V any] struct {
 	m    map[K]V
 	lock sync.RWMutex
@@ -30,4 +32,10 @@ func (m *RWLockMap[K, V]) Delete(key K) {
 	m.lock.Lock()
 	delete(m.m, key)
 	m.lock.Unlock()
+}
+
+func (m *RWLockMap[K, V]) ForEach(f func(K, V)) {
+	for k, v := range m.m {
+		f(k, v)
+	}
 }
