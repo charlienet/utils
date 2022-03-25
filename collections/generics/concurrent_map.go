@@ -1,16 +1,18 @@
 package generics
 
 import (
+	"fmt"
 	"runtime"
 	"sync"
-	"unsafe"
+
+	"github.com/charlienet/utils/hash"
 )
 
 var defaultNumOfBuckets = runtime.GOMAXPROCS(runtime.NumCPU())
 
 type ConcurrnetMap[K comparable, V any] struct {
 	buckets      []*innerMap[K, V]
-	numOfBuckets int
+	numOfBuckets uint64
 }
 
 type innerMap[K comparable, V any] struct {
@@ -71,7 +73,7 @@ func NewConcurrnetMap[K comparable, V any]() *ConcurrnetMap[K, V] {
 	}
 
 	return &ConcurrnetMap[K, V]{
-		numOfBuckets: num,
+		numOfBuckets: uint64(num),
 		buckets:      buckets,
 	}
 }
@@ -92,8 +94,10 @@ func (m *ConcurrnetMap[K, V]) Delete(key K) {
 func (m *ConcurrnetMap[K, V]) ForEach(f func(K, V)) {
 	var wg sync.WaitGroup
 
-	wg.Add(m.numOfBuckets)
-	for i := 0; i < m.numOfBuckets; i++ {
+	num := int(m.numOfBuckets)
+
+	wg.Add(int(m.numOfBuckets))
+	for i := 0; i < num; i++ {
 		go func(i int) {
 			m.buckets[i].foreach(f)
 			wg.Done()
@@ -104,8 +108,10 @@ func (m *ConcurrnetMap[K, V]) ForEach(f func(K, V)) {
 }
 
 func (m *ConcurrnetMap[K, V]) Clone() *ConcurrnetMap[K, V] {
+	num := int(m.numOfBuckets)
+
 	buckets := make([]*innerMap[K, V], m.numOfBuckets)
-	for i := 0; i < m.numOfBuckets; i++ {
+	for i := 0; i < num; i++ {
 		buckets[i] = m.buckets[i].clone()
 	}
 
@@ -116,9 +122,12 @@ func (m *ConcurrnetMap[K, V]) Clone() *ConcurrnetMap[K, V] {
 }
 
 func (m *ConcurrnetMap[K, V]) getBucket(k K) *innerMap[K, V] {
-	pointer := unsafe.Pointer(&k)
-	num := *(*uint)(pointer)
+	bytes := getBytes(k)
 
-	id := num % uint(m.numOfBuckets)
+	id := hash.XXHashUint64(bytes) % m.numOfBuckets
 	return m.buckets[id]
+}
+
+func getBytes(k any) []byte {
+	return []byte(fmt.Sprintf("%v", k))
 }

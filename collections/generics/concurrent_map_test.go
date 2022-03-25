@@ -40,6 +40,18 @@ func TestForEach(t *testing.T) {
 	t.Log("finish")
 }
 
+func TestExist(t *testing.T) {
+	key := "abc"
+	value := "bcd"
+
+	m := generics.NewConcurrnetMap[string, string]()
+	m.Set(key, value)
+
+	keyv2 := "abc"
+	_, ok := m.Get(keyv2)
+	t.Log("ok", ok)
+}
+
 func BenchmarkConcurrnetMap(b *testing.B) {
 	key := "abc"
 	value := "bcd"
